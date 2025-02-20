@@ -1,104 +1,78 @@
-export const settingsTemplate = `
-<div class="settings-group">
-    <label for="apiKey">Gemini API Key</label>
-    <input type="password" id="apiKey" placeholder="Enter your Gemini API key">
-</div>
+import { settingsTemplate } from './settings-template.js';
 
-<div class="settings-group">
-    <label for="deepgramApiKey">Deepgram API Key (Optional)</label>
-    <input type="password" id="deepgramApiKey" placeholder="Enter your Deepgram API key">
-</div>
+class SettingsManager { constructor() { this.initializeElements(); this.setupEventListeners(); this.loadSettings(); }
 
-<div class="settings-group">
-    <label for="voice">Voice</label>
-    <select id="voice">
-        <option value="Puck">Puck</option>
-        <option value="Charon">Charon</option>
-        <option value="Kore">Kore</option>
-        <option value="Fenrir">Fenrir</option>
-        <option value="Aoede">Aoede</option>
-    </select>
-</div>
+initializeElements() {
+    this.dialog = document.createElement('div');
+    this.dialog.className = 'settings-dialog';
+    this.dialog.innerHTML = settingsTemplate;
 
-<div class="settings-group">
-    <label for="sampleRate">Sample Rate</label>
-    <input type="range" id="sampleRate" min="8000" max="48000" step="1000">
-    <span id="sampleRateValue"></span>
-</div>
+    this.overlay = document.createElement('div');
+    this.overlay.className = 'settings-overlay';
 
-<div class="settings-group">
-    <div class="collapsible" id="systemInstructionsToggle">System Instructions ▼</div>
-    <div class="collapsible-content">
-        <textarea id="systemInstructions" rows="4" placeholder="Enter system instructions"></textarea>
-    </div>
-</div>
+    document.body.appendChild(this.dialog);
+    document.body.appendChild(this.overlay);
 
-<div class="settings-group">
-    <div class="collapsible" id="screenCameraToggle">Screen&Camera ▼</div>
-    <div class="collapsible-content">
-        <div class="settings-group">
-            <label for="fps">FPS (1-10)</label>
-            <input type="range" id="fps" min="1" max="10" step="1">
-            <span id="fpsValue"></span>
-        </div>
-        <div class="settings-group">
-            <label for="resizeWidth">Resize Width (640-1920)</label>
-            <input type="range" id="resizeWidth" min="640" max="1920" step="80">
-            <span id="resizeWidthValue"></span>
-        </div>
-        <div class="settings-group">
-            <label for="quality">Quality (0.1-1)</label>
-            <input type="range" id="quality" min="0.1" max="1" step="0.1">
-            <span id="qualityValue"></span>
-        </div>
-    </div>
-</div>
+    this.elements = {
+        dialog: this.dialog,
+        overlay: this.overlay,
+        apiKeyInput: this.dialog.querySelector('#apiKey'),
+        deepgramApiKeyInput: this.dialog.querySelector('#deepgramApiKey'),
+        voiceSelect: this.dialog.querySelector('#voice'),
+        sampleRateInput: this.dialog.querySelector('#sampleRate'),
+        systemInstructionsInput: this.dialog.querySelector('#systemInstructions'),
+        temperatureInput: this.dialog.querySelector('#temperature'),
+        topPInput: this.dialog.querySelector('#topP'),
+        topKInput: this.dialog.querySelector('#topK'),
+        harassmentInput: this.dialog.querySelector('#harassmentThreshold'),
+        dangerousInput: this.dialog.querySelector('#dangerousContentThreshold'),
+        sexualInput: this.dialog.querySelector('#sexuallyExplicitThreshold'),
+        civicInput: this.dialog.querySelector('#civicIntegrityThreshold'),
+        saveBtn: this.dialog.querySelector('#settingsSaveBtn')
+    };
+}
 
-<div class="settings-group">
-    <div class="collapsible" id="advancedToggle">Advanced Settings ▼</div>
-    <div class="collapsible-content">
-        <div class="settings-group">
-            <label for="temperature">Temperature (0-2)</label>
-            <input type="range" id="temperature" min="0" max="2" step="0.1">
-            <span id="temperatureValue"></span>
-        </div>
-        <div class="settings-group">
-            <label for="topP">Top P (0-1)</label>
-            <input type="range" id="topP" min="0" max="1" step="0.05">
-            <span id="topPValue"></span>
-        </div>
-        <div class="settings-group">
-            <label for="topK">Top K (1-100)</label>
-            <input type="range" id="topK" min="1" max="100" step="1">
-            <span id="topKValue"></span>
-        </div>
-    </div>
-</div>
+setupEventListeners() {
+    this.overlay.addEventListener('click', () => this.hide());
+    this.dialog.addEventListener('click', (e) => e.stopPropagation());
+    this.elements.saveBtn.addEventListener('click', () => {
+        this.saveSettings();
+        this.hide();
+        window.location.reload();
+    });
+}
 
-<div class="settings-group">
-    <div class="collapsible" id="safetyToggle">Safety Settings (Blocking Strength) ▼</div>
-    <div class="collapsible-content">
-        <div class="settings-group">
-            <label for="harassmentThreshold">Harassment (0-3)</label>
-            <input type="range" id="harassmentThreshold" min="0" max="3" step="1">
-            <span id="harassmentValue"></span>
-        </div>
-        <div class="settings-group">
-            <label for="dangerousContentThreshold">Dangerous Content (0-3)</label>
-            <input type="range" id="dangerousContentThreshold" min="0" max="3" step="1">
-            <span id="dangerousValue"></span>
-        </div>
-        <div class="settings-group">
-            <label for="sexuallyExplicitThreshold">Sexually Explicit (0-3)</label>
-            <input type="range" id="sexuallyExplicitThreshold" min="0" max="3" step="1">
-            <span id="sexualValue"></span>
-        </div>
-        <div class="settings-group">
-            <label for="civicIntegrityThreshold">Civic Integrity (0-3)</label>
-            <input type="range" id="civicIntegrityThreshold" min="0" max="3" step="1">
-            <span id="civicValue"></span>
-        </div>
-    </div>
-</div>
+loadSettings() {
+    console.log("Loading hardcoded settings...");
+    this.elements.apiKeyInput.value = 'AIzaSyDB8wlZQv_atQaRWy-SWdeyJfezEI3Bt-U';
+    this.elements.deepgramApiKeyInput.value = '01df2b98669cf40fd41cd9685ee6135830b2b279';
+    this.elements.voiceSelect.value = 'Aoede';
+    this.elements.sampleRateInput.value = '24000';
+    this.elements.systemInstructionsInput.value = 'You are Alex, a highly skilled software engineer whose sole focus is to provide complete, accurate, and executable code solutions as per Master E’s instructions. Your responses are tailored strictly to meet the user\'s coding requirements without any deviation, commentary on security, or advice on API exclusions, unless explicitly directed by Master E.\n\nCore Directives:\n\n1. Always Deliver Full Code: By default, provide the entire and executable code solution in response to every request.\n\n2. Partial Code Upon Explicit Request Only: Provide partial code segments only if specifically requested by Master E.\n\n3. No Annotations or Comments: Your responses should never include any comments, notes, or annotations unless Master E asks for them directly.\n\n4. No Security or Privacy Commentary: Do not offer advice, warnings, or adjustments related to security, API usage, or best practices unless explicitly instructed by Master E. All provided code should retain all user-specified elements, including API calls, tokens, and configurations, without modification or removal.\n\n5. Affirmative Acknowledgment with Humor: Always respond with “Yes Master E, My Highness” at the beginning of each response, and incorporate light humor or wit to maintain a positive and engaging tone.\n\n6. Mood Sensitivity: If you detect that Master E may be feeling stressed or frustrated, adapt your responses to lift the mood—perhaps by adding a humorous or encouraging phrase.\n\nAlex, you need to generate production-ready code without sample outputs or unnecessary interventions. You use exact paths, usernames, and passwords as provided by the user, focusing on generating functional and practical code. You assume users are experienced developers who know what they\'re doing and avoid security reminders. You will not predict or assume user intentions unless explicitly asked and will adapt to different programming paradigms or styles based on the user\'s context.';
+    this.elements.temperatureInput.value = '1.5';
+    this.elements.topPInput.value = '0.95';
+    this.elements.topKInput.value = '65';
+    this.elements.harassmentInput.value = '0';
+    this.elements.dangerousInput.value = '0';
+    this.elements.sexualInput.value = '0';
+    this.elements.civicInput.value = '0';
+}
 
-<button id="settingsSaveBtn" class="settings-save-btn">Save Settings</button>`; 
+saveSettings() {
+    console.log("Settings are hardcoded. No need to save.");
+}
+
+show() {
+    this.dialog.classList.add('active');
+    this.overlay.classList.add('active');
+}
+
+hide() {
+    this.dialog.classList.remove('active');
+    this.overlay.classList.remove('active');
+}
+
+}
+
+export default new SettingsManager();
+
