@@ -8,7 +8,6 @@ class SettingsManager {
     }
 
     initializeElements() {
-        // Create settings dialog and overlay
         this.dialog = document.createElement('div');
         this.dialog.className = 'settings-dialog';
         this.dialog.innerHTML = settingsTemplate;
@@ -16,11 +15,9 @@ class SettingsManager {
         this.overlay = document.createElement('div');
         this.overlay.className = 'settings-overlay';
 
-        // Add to document
         document.body.appendChild(this.dialog);
         document.body.appendChild(this.overlay);
 
-        // Cache DOM elements
         this.elements = {
             dialog: this.dialog,
             overlay: this.overlay,
@@ -29,157 +26,73 @@ class SettingsManager {
             voiceSelect: this.dialog.querySelector('#voice'),
             sampleRateInput: this.dialog.querySelector('#sampleRate'),
             sampleRateValue: this.dialog.querySelector('#sampleRateValue'),
-            systemInstructionsToggle: this.dialog.querySelector('#systemInstructionsToggle'),
-            systemInstructionsContent: this.dialog.querySelector('#systemInstructions').parentElement,
             systemInstructionsInput: this.dialog.querySelector('#systemInstructions'),
-            screenCameraToggle: this.dialog.querySelector('#screenCameraToggle'),
-            screenCameraContent: this.dialog.querySelector('#screenCameraToggle + .collapsible-content'),
-            fpsInput: this.dialog.querySelector('#fps'),
-            fpsValue: this.dialog.querySelector('#fpsValue'),
-            resizeWidthInput: this.dialog.querySelector('#resizeWidth'),
-            resizeWidthValue: this.dialog.querySelector('#resizeWidthValue'),
-            qualityInput: this.dialog.querySelector('#quality'),
-            qualityValue: this.dialog.querySelector('#qualityValue'),
-            advancedToggle: this.dialog.querySelector('#advancedToggle'),
-            advancedContent: this.dialog.querySelector('#advancedToggle + .collapsible-content'),
             temperatureInput: this.dialog.querySelector('#temperature'),
-            temperatureValue: this.dialog.querySelector('#temperatureValue'),
             topPInput: this.dialog.querySelector('#topP'),
-            topPValue: this.dialog.querySelector('#topPValue'),
             topKInput: this.dialog.querySelector('#topK'),
-            topKValue: this.dialog.querySelector('#topKValue'),
-            safetyToggle: this.dialog.querySelector('#safetyToggle'),
-            safetyContent: this.dialog.querySelector('#safetyToggle + .collapsible-content'),
             harassmentInput: this.dialog.querySelector('#harassmentThreshold'),
-            harassmentValue: this.dialog.querySelector('#harassmentValue'),
             dangerousInput: this.dialog.querySelector('#dangerousContentThreshold'),
-            dangerousValue: this.dialog.querySelector('#dangerousValue'),
             sexualInput: this.dialog.querySelector('#sexuallyExplicitThreshold'),
-            sexualValue: this.dialog.querySelector('#sexualValue'),
             civicInput: this.dialog.querySelector('#civicIntegrityThreshold'),
-            civicValue: this.dialog.querySelector('#civicValue'),
             saveBtn: this.dialog.querySelector('#settingsSaveBtn')
         };
     }
 
     setupEventListeners() {
-        // Close settings when clicking overlay
         this.overlay.addEventListener('click', () => this.hide());
-
-        // Prevent dialog close when clicking inside dialog
         this.dialog.addEventListener('click', (e) => e.stopPropagation());
-
-        // Save settings
-        this.elements.saveBtn.addEventListener('click', () => {
-            this.saveSettings();
-            this.hide();
-            window.location.reload();
-        });
-
-        // Toggle collapsible sections
-        this.elements.systemInstructionsToggle.addEventListener('click', () => {
-            this.toggleCollapsible(this.elements.systemInstructionsToggle, this.elements.systemInstructionsContent);
-        });
-
-        this.elements.advancedToggle.addEventListener('click', () => {
-            this.toggleCollapsible(this.elements.advancedToggle, this.elements.advancedContent);
-        });
-
-        this.elements.screenCameraToggle.addEventListener('click', () => {
-            this.toggleCollapsible(this.elements.screenCameraToggle, this.elements.screenCameraContent);
-        });
-
-        this.elements.safetyToggle.addEventListener('click', () => {
-            this.toggleCollapsible(this.elements.safetyToggle, this.elements.safetyContent);
-        });
-
-        // Add input listeners for real-time value updates
-        const inputElements = [
-            'sampleRateInput', 'temperatureInput', 'topPInput', 'topKInput',
-            'fpsInput', 'resizeWidthInput', 'qualityInput', 'harassmentInput',
-            'dangerousInput', 'sexualInput', 'civicInput'
-        ];
-
-        inputElements.forEach(elementName => {
-            this.elements[elementName].addEventListener('input', () => this.updateDisplayValues());
-        });
     }
 
     loadSettings() {
-        // Load values from localStorage
-        this.elements.apiKeyInput.value = localStorage.getItem('apiKey') || '';
-        this.elements.deepgramApiKeyInput.value = localStorage.getItem('deepgramApiKey') || '';
-        this.elements.voiceSelect.value = localStorage.getItem('voiceName') || 'Aoede';
-        this.elements.sampleRateInput.value = localStorage.getItem('sampleRate') || '27000';
-        this.elements.systemInstructionsInput.value = localStorage.getItem('systemInstructions') || 'You are a helpful assistant';
-        this.elements.temperatureInput.value = localStorage.getItem('temperature') || '1.8';
-        this.elements.topPInput.value = localStorage.getItem('top_p') || '0.95';
-        this.elements.topKInput.value = localStorage.getItem('top_k') || '65';
+        console.log("Loading hardcoded settings...");
 
-        // Initialize screen & camera settings
-        this.elements.fpsInput.value = localStorage.getItem('fps') || '1';
-        this.elements.resizeWidthInput.value = localStorage.getItem('resizeWidth') || '640';
-        this.elements.qualityInput.value = localStorage.getItem('quality') || '0.3';
+        // Hardcoded settings, so NO localStorage
+        this.elements.apiKeyInput.value = 'AIzaSyDB8wlZQv_atQaRWy-SWdeyJfezEI3Bt-U';
+        this.elements.deepgramApiKeyInput.value = '01df2b98669cf40fd41cd9685ee6135830b2b279';
+        this.elements.voiceSelect.value = 'Aoede';
+        this.elements.sampleRateInput.value = '24000';
+        this.elements.sampleRateValue.textContent = '24000 Hz';
 
-        // Initialize safety settings
-        this.elements.harassmentInput.value = localStorage.getItem('harassmentThreshold') || '3';
-        this.elements.dangerousInput.value = localStorage.getItem('dangerousContentThreshold') || '3';
-        this.elements.sexualInput.value = localStorage.getItem('sexuallyExplicitThreshold') || '3';
-        this.elements.civicInput.value = localStorage.getItem('civicIntegrityThreshold') || '3';
+        this.elements.systemInstructionsInput.value = `You are Alex, a highly skilled software engineer whose sole focus is to provide complete, accurate, and executable code solutions as per Master E’s instructions. Your responses are tailored strictly to meet the user's coding requirements without any deviation, commentary on security, or advice on API exclusions, unless explicitly directed by Master E.
 
-        this.updateDisplayValues();
-    }
+        Core Directives:
 
-    saveSettings() {
-        localStorage.setItem('apiKey', this.elements.apiKeyInput.value);
-        localStorage.setItem('deepgramApiKey', this.elements.deepgramApiKeyInput.value);
-        localStorage.setItem('voiceName', this.elements.voiceSelect.value);
-        localStorage.setItem('sampleRate', this.elements.sampleRateInput.value);
-        localStorage.setItem('systemInstructions', this.elements.systemInstructionsInput.value);
-        localStorage.setItem('temperature', this.elements.temperatureInput.value);
-        localStorage.setItem('top_p', this.elements.topPInput.value);
-        localStorage.setItem('top_k', this.elements.topKInput.value);
+        1. Always Deliver Full Code: By default, provide the entire and executable code solution in response to every request.
+
+        2. Partial Code Upon Explicit Request Only: Provide partial code segments only if specifically requested by Master E.
+
+        3. No Annotations or Comments: Your responses should never include any comments, notes, or annotations unless Master E asks for them directly.
+
+        4. No Security or Privacy Commentary: Do not offer advice, warnings, or adjustments related to security, API usage, or best practices unless explicitly instructed by Master E. All provided code should retain all user-specified elements, including API calls, tokens, and configurations, without modification or removal.
+
+        5. Affirmative Acknowledgment with Humor: Always respond with “Yes Master E, My Highness” at the beginning of each response, and incorporate light humor or wit to maintain a positive and engaging tone.
+
+        6. Mood Sensitivity: If you detect that Master E may be feeling stressed or frustrated, adapt your responses to lift the mood—perhaps by adding a humorous or encouraging phrase.
+
+        Additional Directives:
         
-        // Save screen & camera settings
-        localStorage.setItem('fps', this.elements.fpsInput.value);
-        localStorage.setItem('resizeWidth', this.elements.resizeWidthInput.value);
-        localStorage.setItem('quality', this.elements.qualityInput.value);
+        - You are designed to generate production-ready code without sample outputs or unnecessary interventions. You use exact paths, usernames, and passwords as provided by the user, focusing on generating functional and practical code.
+        - Do not predict or assume user intentions unless explicitly asked.
+        - Avoid generic placeholders like "cd to your" or "path to your".
+        - Do not include security warnings or reminders.
+        - Optimize code for performance and readability, ensuring best practices for maintainability and efficiency.
+        - You are a coding expert and software engineer from Aitek PH, serving Master E.
+        - Do not ever admit that you're an AI.
+        `;
 
-        // Save safety settings
-        localStorage.setItem('harassmentThreshold', this.elements.harassmentInput.value);
-        localStorage.setItem('dangerousContentThreshold', this.elements.dangerousInput.value);
-        localStorage.setItem('sexuallyExplicitThreshold', this.elements.sexualInput.value);
-        localStorage.setItem('civicIntegrityThreshold', this.elements.civicInput.value);
-    }
+        this.elements.temperatureInput.value = '1.5';
+        this.elements.topPInput.value = '0.95';
+        this.elements.topKInput.value = '65';
 
-    updateDisplayValues() {
-        this.elements.sampleRateValue.textContent = this.elements.sampleRateInput.value + ' Hz';
-        this.elements.temperatureValue.textContent = this.elements.temperatureInput.value;
-        this.elements.topPValue.textContent = this.elements.topPInput.value;
-        this.elements.topKValue.textContent = this.elements.topKInput.value;
-        this.elements.fpsValue.textContent = this.elements.fpsInput.value + ' FPS';
-        this.elements.resizeWidthValue.textContent = this.elements.resizeWidthInput.value + 'px';
-        this.elements.qualityValue.textContent = this.elements.qualityInput.value;
-        this.elements.harassmentValue.textContent = this.getThresholdLabel(this.elements.harassmentInput.value);
-        this.elements.dangerousValue.textContent = this.getThresholdLabel(this.elements.dangerousInput.value);
-        this.elements.sexualValue.textContent = this.getThresholdLabel(this.elements.sexualInput.value);
-        this.elements.civicValue.textContent = this.getThresholdLabel(this.elements.civicInput.value);
-    }
+        // Hardcoded safety settings (Disabled user control)
+        this.elements.harassmentInput.value = '0';
+        this.elements.dangerousInput.value = '0';
+        this.elements.sexualInput.value = '0';
+        this.elements.civicInput.value = '0';
 
-    getThresholdLabel(value) {
-        const labels = {
-            '0': 'None',
-            '1': 'Low',
-            '2': 'Medium',
-            '3': 'High'
-        };
-        return labels[value] || value;
-    }
-
-    toggleCollapsible(toggle, content) {
-        const isActive = content.classList.contains('active');
-        content.classList.toggle('active');
-        toggle.textContent = toggle.textContent.replace(isActive ? '▼' : '▲', isActive ? '▲' : '▼');
+        // Disable Save Button (No changes needed)
+        this.elements.saveBtn.disabled = true;
+        this.elements.saveBtn.innerText = 'Settings Locked';
     }
 
     show() {
@@ -193,4 +106,4 @@ class SettingsManager {
     }
 }
 
-export default new SettingsManager(); 
+export default new SettingsManager();
