@@ -1,34 +1,255 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini Live</title>
-    <link rel="stylesheet" href="css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gemini Live Interface</title>
+  <style>
+    /* Basic styling */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    
+    /* App container styling */
+    .app-container {
+      position: relative;
+      padding: 20px;
+    }
+    
+    /* Settings Modal Styling */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.7);
+    }
+    
+    .modal-content {
+      background-color: #fff;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 300px;
+      position: relative;
+      text-align: center;
+    }
+    
+    .close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    .modal-button {
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+    }
+    
+    /* Voice Overlay (full-screen dark overlay) */
+    .voice-overlay {
+      display: none;
+      position: fixed;
+      z-index: 20;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+    }
+    
+    .voice-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: #fff;
+    }
+    
+    .close-voice {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: #fff;
+    }
+    
+    /* Additional styling for buttons and elements (customize as needed) */
+  </style>
 </head>
 <body>
-    <div class="app-container">
-        <button id="disconnectBtn" class="disconnect-btn">Disconnect</button>
-        <button id="connectBtn" class="connect-btn" style="display: none;">Connect</button>
-        <button id="settingsBtn" class="settings-btn">⚙️</button>
-        <button id="cameraBtn" class="camera-btn">
-            <span class="camera-icon">📷</span>
-        </button>
-        <button id="screenBtn" class="screen-btn">
-            <span class="screen-icon">🖥️</span>
-        </button>
-        <button id="micBtn" class="mic-btn">
-            <span class="mic-icon">🎤</span>
-        </button>
-        <div id="chatHistory" class="chat-history"></div>
-        <canvas id="visualizer" class="visualizer"></canvas>
-        <div id="cameraPreview" class="camera-preview"></div>
-        <div id="screenPreview" class="screen-preview"></div>
-        <div class="text-input-container">
-            <input type="text" id="messageInput" placeholder="Type your message..." class="text-input">
-            <button id="sendBtn" class="send-btn">➤</button>
-        </div>
+  <div class="app-container">
+    <button id="disconnectBtn" class="disconnect-btn">Disconnect</button>
+    <button id="connectBtn" class="connect-btn" style="display: none;">Connect</button>
+    <button id="settingsBtn" class="settings-btn">⚙️</button>
+    <button id="cameraBtn" class="camera-btn">
+      <span class="camera-icon">📷</span>
+    </button>
+    <button id="screenBtn" class="screen-btn">
+      <span class="screen-icon">🖥️</span>
+    </button>
+    <button id="micBtn" class="mic-btn">
+      <span class="mic-icon">🎤</span>
+    </button>
+    <div id="chatHistory" class="chat-history"></div>
+    <canvas id="visualizer" class="visualizer"></canvas>
+    <div id="cameraPreview" class="camera-preview"></div>
+    <div id="screenPreview" class="screen-preview"></div>
+    <div class="text-input-container">
+      <input type="text" id="messageInput" placeholder="Type your message..." class="text-input">
+      <button id="sendBtn" class="send-btn">➤</button>
     </div>
-    <script type="module" src="js/script.js"></script>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal">
+    <div class="modal-content settings-modal">
+      <span id="closeSettings" class="close">&times;</span>
+      <h2>Settings</h2>
+      <!-- Insert your settings fields here -->
+      <button id="applySettingsBtn" class="modal-button">Apply Settings</button>
+      <button id="voiceInterfaceBtn" class="modal-button">Voice Interface</button>
+    </div>
+  </div>
+
+  <!-- Voice Interface Overlay -->
+  <div id="voiceOverlay" class="voice-overlay">
+    <div class="voice-container">
+      <button id="closeVoiceOverlay" class="close-voice">&times;</button>
+      <canvas id="voiceVisualizer" width="200" height="200"></canvas>
+      <p>Listening...</p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Elements for Settings Modal
+      const settingsBtn = document.getElementById("settingsBtn");
+      const settingsModal = document.getElementById("settingsModal");
+      const closeSettings = document.getElementById("closeSettings");
+      const applySettingsBtn = document.getElementById("applySettingsBtn");
+      const voiceInterfaceBtn = document.getElementById("voiceInterfaceBtn");
+
+      // Elements for Voice Overlay
+      const voiceOverlay = document.getElementById("voiceOverlay");
+      const closeVoiceOverlay = document.getElementById("closeVoiceOverlay");
+      const voiceVisualizerCanvas = document.getElementById("voiceVisualizer");
+
+      // Audio Visualizer variables
+      let audioContext, analyser, dataArray, animationId, mediaStream;
+
+      // Open Settings Modal when the settings button is clicked
+      settingsBtn.addEventListener("click", () => {
+        settingsModal.style.display = "block";
+      });
+
+      // Close Settings Modal when close (×) is clicked
+      closeSettings.addEventListener("click", () => {
+        settingsModal.style.display = "none";
+      });
+
+      // "Apply Settings" button (customize as needed)
+      applySettingsBtn.addEventListener("click", () => {
+        // Insert your settings saving logic here
+        alert("Settings applied.");
+        settingsModal.style.display = "none";
+      });
+
+      // "Voice Interface" button in the settings modal
+      voiceInterfaceBtn.addEventListener("click", () => {
+        // Apply any settings if needed (e.g., storing settings or setting a system prompt for DALL·E)
+        settingsModal.style.display = "none";
+        startVoiceInterface();
+      });
+
+      // Close Voice Overlay when its close button is clicked
+      closeVoiceOverlay.addEventListener("click", () => {
+        stopVoiceInterface();
+        voiceOverlay.style.display = "none";
+      });
+
+      // Function to start the voice interface (overlay)
+      function startVoiceInterface() {
+        voiceOverlay.style.display = "block";
+        // Request microphone access (will prompt the user)
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(stream => {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            const source = audioContext.createMediaStreamSource(stream);
+            source.connect(analyser);
+            analyser.fftSize = 256;
+            const bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+            mediaStream = stream;
+            drawVoiceVisualizer();
+          })
+          .catch(err => {
+            console.error("Error accessing microphone:", err);
+            alert("Microphone access denied.");
+            voiceOverlay.style.display = "none";
+          });
+      }
+
+      // Function to stop the voice interface and audio stream
+      function stopVoiceInterface() {
+        if (animationId) cancelAnimationFrame(animationId);
+        if (mediaStream) {
+          mediaStream.getTracks().forEach(track => track.stop());
+        }
+        if (audioContext) {
+          audioContext.close();
+        }
+      }
+
+      // Function to draw the circular audio visualizer on the 200x200 canvas
+      function drawVoiceVisualizer() {
+        const ctx = voiceVisualizerCanvas.getContext("2d");
+        const WIDTH = voiceVisualizerCanvas.width;
+        const HEIGHT = voiceVisualizerCanvas.height;
+        analyser.getByteFrequencyData(dataArray);
+        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+        const baseRadius = 80; // Base radius fits within a 200px diameter canvas
+        const centerX = WIDTH / 2;
+        const centerY = HEIGHT / 2;
+        const barCount = dataArray.length;
+        const angleStep = (2 * Math.PI) / barCount;
+
+        for (let i = 0; i < barCount; i++) {
+          const value = dataArray[i];
+          const barLength = (value / 255) * baseRadius;
+          const angle = i * angleStep;
+          const xStart = centerX + Math.cos(angle) * baseRadius;
+          const yStart = centerY + Math.sin(angle) * baseRadius;
+          const xEnd = centerX + Math.cos(angle) * (baseRadius + barLength);
+          const yEnd = centerY + Math.sin(angle) * (baseRadius + barLength);
+
+          ctx.strokeStyle = "rgba(0, 150, 255, 0.8)";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(xStart, yStart);
+          ctx.lineTo(xEnd, yEnd);
+          ctx.stroke();
+        }
+
+        animationId = requestAnimationFrame(drawVoiceVisualizer);
+      }
+    });
+  </script>
 </body>
 </html>
